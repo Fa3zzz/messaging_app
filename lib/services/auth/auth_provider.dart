@@ -21,5 +21,9 @@ abstract class AuthProvider {
     required String toEmail,
   });
 
+  Future<void> saveUsername({
+    required String uid,
+    required String username,
+  });
 
 }

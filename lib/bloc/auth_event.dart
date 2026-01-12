@@ -22,9 +22,11 @@ class AuthEventLogOut extends AuthEvent {
 class AuthEventRegister extends AuthEvent {
   final String email;
   final String password;
+  final String username;
   const AuthEventRegister(
     this.email,
-    this.password
+    this.password,
+    this.username,
   );
 }
 

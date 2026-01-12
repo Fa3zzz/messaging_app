@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:messaging_app/bloc/auth_bloc.dart';
+import 'package:messaging_app/bloc/auth_event.dart';
 
 class VerifyEmailView extends StatefulWidget {
   const VerifyEmailView({super.key});
@@ -34,7 +37,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
             ),
             SizedBox(height: 16.0,),
             ElevatedButton(onPressed: () {
-              print('User has requested resending of the verification email');
+              context.read<AuthBloc>().add(const AuthEventSendEmailVerification());
             }, 
             child: Text(
               'Resend Verification Email',
@@ -42,6 +45,15 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                 color: Theme.of(context).colorScheme.primary,
               ),  
             ),
+            ),
+            TextButton(
+              onPressed: () {
+                context.read<AuthBloc>().add(const AuthEventLogOut());
+              }, 
+              child: const Text(
+                'Restart',
+                style: TextStyle(color: Colors.lightBlueAccent),
+              ),
             ),
           ],
         ),

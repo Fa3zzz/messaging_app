@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth, FirebaseAuthException;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:messaging_app/firebase_options.dart';
@@ -118,5 +119,13 @@ class FirebaseAuthProvider implements AuthProvider {
     } catch(_) {
       throw GenericAuthExceptions();
     }
+  }
+  
+  @override
+  Future<void> saveUsername({required String uid, required String username}) async {
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'username': username,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
   }
 }

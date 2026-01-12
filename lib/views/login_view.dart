@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:messaging_app/views/register_view.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:messaging_app/bloc/auth_bloc.dart';
+import 'package:messaging_app/bloc/auth_event.dart';
+import 'package:messaging_app/bloc/auth_state.dart';
+import 'package:messaging_app/services/auth/auth_exceptions.dart';
+import 'package:messaging_app/utilities/dialogs/error_dialog.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -9,60 +14,90 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
+  late final TextEditingController _email;
+  late final TextEditingController _password;
+
+  @override
+  void initState() {
+    _email = TextEditingController();
+    _password = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.secondary,
-      appBar: AppBar(
-        title: const Text('Login',),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              autocorrect: false,
-              enableSuggestions: false,
-              autofocus: true,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(hintText: 'Enter Username'),
-            ),
-            SizedBox(
-              height: 16.0,
-            ),
-            TextField(
-              enableSuggestions: false,
-              autocorrect: false,
-              obscureText: true,
-              decoration: const InputDecoration(hintText: 'Enter Password'),
-            ),
-            SizedBox(height: 16.0,),
-            ElevatedButton(onPressed: () {
-             print('User would like to login');
-            }, 
-            child: Text(
-              'Login',
-              style: TextStyle(
-                color: Colors.black,
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) async {
+        if (state is AuthStateLoggedOut) {
+          if(state.exception is InvalidEmailAuthException) {
+            await showErrorDialog(context, 'Invalid Email');
+          } else if (state.exception is InvalidCredentialsAuthException) {
+            await showErrorDialog(context, 'Invalid Credentials');
+          } else if (state.exception is GenericAuthExceptions) {
+            await showErrorDialog(context, 'Authentication Error');
+          }
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.secondary,
+        appBar: AppBar(title: const Text('Login')),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              TextField(
+                controller: _email,
+                autocorrect: false,
+                enableSuggestions: false,
+                autofocus: true,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(hintText: 'Enter Email'),
               ),
-            ),
-            ),
-            SizedBox(height: 16.0,),
-            TextButton(onPressed: () {
-               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const RegisterView(),  
+              SizedBox(height: 16.0),
+              TextField(
+                controller: _password,
+                enableSuggestions: false,
+                autocorrect: false,
+                obscureText: true,
+                decoration: const InputDecoration(hintText: 'Enter Password'),
+              ),
+              SizedBox(height: 16.0),
+              ElevatedButton(
+                onPressed: () {
+                  final email = _email.text;
+                  final password = _password.text;
+                  context.read<AuthBloc>().add(AuthEventLogIn(email, password));
+                },
+                child: Text('Login', style: TextStyle(color: Colors.black)),
+              ),
+              SizedBox(height: 16.0),
+              TextButton(
+                onPressed: () {
+                  context.read<AuthBloc>().add(const AuthEventShouldRegister());
+                },
+                child: const Text(
+                  'Not registered yet? register now',
+                  style: TextStyle(color: Colors.lightBlueAccent),
                 ),
-              );
-            }, 
-            child: const Text(
-              'Not registered yet? register now',
-              style: TextStyle(
-                color: Colors.lightBlueAccent
               ),
-            ),
-            ),
-          ],
+              TextButton(
+                onPressed: () {
+                  context.read<AuthBloc>().add(AuthEventForgotPassword());
+                }, 
+                child: const Text(
+                  'Forgot Password?',
+                  style: TextStyle(color: Colors.lightBlueAccent),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
