@@ -1,12 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:messaging_app/bloc/chat/chat_event.dart';
 import 'package:messaging_app/bloc/chat/chat_state.dart';
+import 'package:messaging_app/services/chat/chat_message.dart';
 import 'package:messaging_app/services/chat/chat_provider.dart';
 import 'dart:async';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final ChatProvider chatProvider;
-  StreamSubscription? _subscription;
 
   ChatBloc(this.chatProvider) : super(const ChatInitial()) {
     on<ChatStarted>(_onChatStarted);
@@ -17,13 +17,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     ChatStarted event,
     Emitter<ChatState> emit,
   ) async {
-    _subscription ??= chatProvider.chatStream(event.chatId).listen(
-      (messages) {
-        emit(ChatLoaded(messages));
-      },
-      onError: (error) {
-        emit(ChatError(error.toString()));
-      }
+    await emit.forEach<List<ChatMessage>>(
+      chatProvider.chatStream(event.chatId), 
+      onData: (messages) => ChatLoaded(messages),
+      onError: (error, stackTrace) => ChatError(error.toString()),
     );
   }
 
@@ -32,15 +29,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     try {
-      await chatProvider.sendMessage(event.message);
+      await chatProvider.sendMessage(chatId: event.chatId, text: event.text);
     } catch (e) {
       emit(ChatError(e.toString()));
     }
   }
 
-  Future<void> close() {
-    _subscription?.cancel();
-    return super.close();
-  }
 
 }

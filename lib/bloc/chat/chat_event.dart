@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:messaging_app/services/chat/chat_message.dart';
+import 'package:flutter/material.dart';
 
 @immutable
 class ChatEvent {
@@ -12,6 +12,10 @@ class ChatStarted extends ChatEvent {
 }
 
 class ChatMessageSent extends ChatEvent {
-  final ChatMessage message;
-  const ChatMessageSent(this.message);
+  final String chatId;
+  final String text;
+  const ChatMessageSent({
+    required  this.chatId,
+    required this.text,
+  });
 }

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:messaging_app/services/chat/chat_message.dart';
 import 'package:messaging_app/services/chat/chat_provider.dart';
 
@@ -11,7 +12,7 @@ class FirestoreChatProvide implements ChatProvider {
         .collection('chats')
         .doc(chatId)
         .collection('messages')
-        .orderBy('createdAt', descending: false)
+        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
           return snapshot.docs
@@ -21,16 +22,24 @@ class FirestoreChatProvide implements ChatProvider {
   }
 
   @override
-  Future<void> sendMessage(ChatMessage message) async {
+  Future<void> sendMessage({
+    required String chatId,
+    required String text,
+  }) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      throw StateError('User not logged in');
+    }
+
     await _firestore
         .collection('chats')
-        .doc(message.chatId)
+        .doc(chatId)
         .collection('messages')
         .add({
-      'chatId' : message.chatId,
-      'senderId' : message.senderId,
-      'text' : message.text,
-      'createdAt' : FieldValue.serverTimestamp(),
-    });
+          'chatId':chatId,
+          'senderId':uid,
+          'text':text,
+          'createdAt':FieldValue.serverTimestamp()
+        });
   }
 }

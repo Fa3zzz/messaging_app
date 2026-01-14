@@ -16,7 +16,10 @@ class ChatService implements ChatProvider {
   }
 
   @override
-  Future<void> sendMessage(ChatMessage message) {
-    return provider.sendMessage(message);
+  Future<void> sendMessage({
+    required String chatId,
+    required String text,
+  }) {
+    return provider.sendMessage(chatId: chatId, text: text);
   }
 }

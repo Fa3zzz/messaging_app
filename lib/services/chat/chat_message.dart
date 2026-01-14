@@ -25,12 +25,15 @@ class ChatMessage {
       throw StateError('Missing data for chat message ${doc.id}');
     }
 
+    final ts = data['createdAt'];
+    final createdAt = ts is Timestamp ? ts.toDate() : DateTime.now();
+
     return ChatMessage(
       messageId: doc.id, 
       chatId: data['chatId'] as String, 
       senderId: data['senderId'] as String, 
       text: data['text'] as String, 
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      createdAt: createdAt,
     );
 
   }
