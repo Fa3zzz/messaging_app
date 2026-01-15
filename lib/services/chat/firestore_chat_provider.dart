@@ -109,7 +109,7 @@ class FirestoreChatProvide implements ChatProvider {
     }
     return _firestore
         .collection('chats')
-        .where('memebers', arrayContains: uid)
+        .where('members', arrayContains: uid)
         .orderBy('updatedAt', descending: true)
         .snapshots();
   }

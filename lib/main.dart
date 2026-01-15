@@ -6,8 +6,10 @@ import 'package:messaging_app/bloc/auth_event.dart';
 import 'package:messaging_app/bloc/auth_state.dart';
 import 'package:messaging_app/helpers/loading_screen.dart';
 import 'package:messaging_app/services/auth/firebase_auth_provider.dart';
-import 'package:messaging_app/views/chats_view.dart';
+import 'package:messaging_app/services/chat/chat_service.dart';
+import 'package:messaging_app/services/feed/feed_service.dart';
 import 'package:messaging_app/views/forgot_password_view.dart';
+import 'package:messaging_app/views/home_shell_view.dart';
 import 'package:messaging_app/views/login_view.dart';
 import 'package:messaging_app/views/register_view.dart';
 import 'package:messaging_app/views/verify_email_view.dart';
@@ -16,40 +18,43 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
-    MaterialApp(
-      title: 'Messaging App',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        appBarTheme: AppBarTheme(
-          backgroundColor: ColorScheme.fromSeed(
-            seedColor: Colors.indigo,
-          ).secondary,
-          foregroundColor: ColorScheme.fromSeed(
-            seedColor: Colors.indigo,
-          ).onSecondary,
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          hintStyle: TextStyle(
-            color: ColorScheme.fromSeed(
+    MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<ChatService>(create: (_) => ChatService.firestore()),
+        RepositoryProvider<FeedService>(create: (_) => FeedService.firestore()),
+      ],
+      child: MaterialApp(
+        title: 'Messaging App',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+          appBarTheme: AppBarTheme(
+            backgroundColor: ColorScheme.fromSeed(
               seedColor: Colors.indigo,
-            ).onSecondary.withAlpha(150),
+            ).secondary,
+            foregroundColor: ColorScheme.fromSeed(
+              seedColor: Colors.indigo,
+            ).onSecondary,
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            hintStyle: TextStyle(
+              color: ColorScheme.fromSeed(
+                seedColor: Colors.indigo,
+              ).onSecondary.withAlpha(150),
+            ),
           ),
         ),
-      ),
-      home: BlocProvider<AuthBloc>(
-        create: (context) => AuthBloc(FirebaseAuthProvider()),
-        child: const HomePage(),
+        home: BlocProvider<AuthBloc>(
+          create: (context) => AuthBloc(FirebaseAuthProvider()),
+          child: const HomePage(),
+        ),
       ),
     ),
   );
 }
-
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -59,7 +64,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   @override
   void initState() {
     super.initState();
@@ -70,9 +74,9 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
-        if(state.isLoading) {
+        if (state.isLoading) {
           LoadingScreen().show(
-            context: context, 
+            context: context,
             text: state.loadingText ?? 'Please wait a moment...',
           );
         } else {
@@ -81,7 +85,7 @@ class _HomePageState extends State<HomePage> {
       },
       builder: (context, state) {
         if (state is AuthStateLoggedIn) {
-          return const ChatsView();
+          return const HomeShellView();
         } else if (state is AuthStateNeedsVerification) {
           return const VerifyEmailView();
         } else if (state is AuthStateLoggedOut) {
@@ -91,9 +95,7 @@ class _HomePageState extends State<HomePage> {
         } else if (state is AuthStateRegistering) {
           return const RegisterView();
         } else {
-          return const Scaffold(
-            body: CircularProgressIndicator(),
-          );
+          return const Scaffold(body: CircularProgressIndicator());
         }
       },
     );
