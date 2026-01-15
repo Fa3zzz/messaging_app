@@ -19,3 +19,12 @@ class ChatMessageSent extends ChatEvent {
     required this.text,
   });
 }
+
+class ChatStartRequested extends ChatEvent {
+  final String otherUid;
+  final String otherUsername;
+  const ChatStartRequested({
+    required this.otherUid,
+    required this.otherUsername,
+  });
+}

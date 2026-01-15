@@ -28,7 +28,7 @@ class FirebaseAuthProvider implements AuthProvider {
         throw WeakPasswordAuthExceptions();
       } else if (e.code == 'email-already-in-use') {
         throw EmailAlreadyInUseAuthException();
-      } else if (e.code == 'invlid-email') {
+      } else if (e.code == 'invalid-email') {
         throw InvalidEmailAuthException();
       } else {
         throw GenericAuthExceptions();
@@ -109,9 +109,9 @@ class FirebaseAuthProvider implements AuthProvider {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: toEmail);
     } on FirebaseAuthException catch(e) {
-      if (e.code == 'firebase_auth/invalid-email') {
+      if (e.code == 'invalid-email') {
         throw InvalidEmailAuthException();
-      } else if (e.code == 'firebase_auth/user-not-found') {
+      } else if (e.code == 'user-not-found') {
         throw InvalidCredentialsAuthException();
       } else {
         throw GenericAuthExceptions();

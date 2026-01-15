@@ -11,6 +11,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ChatBloc(this.chatProvider) : super(const ChatInitial()) {
     on<ChatStarted>(_onChatStarted);
     on<ChatMessageSent>(_onChatMessageSent);
+    on<ChatStartRequested>(_onChatStartRequest);
   }
 
   Future<void> _onChatStarted(
@@ -30,6 +31,18 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ) async {
     try {
       await chatProvider.sendMessage(chatId: event.chatId, text: event.text);
+    } catch (e) {
+      emit(ChatError(e.toString()));
+    }
+  }
+
+  Future<void> _onChatStartRequest(
+    ChatStartRequested event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      final chatId = await chatProvider.getOrCreateChatId(otherUid: event.otherUid);
+      emit(ChatReady(chatId: chatId, title: event.otherUsername));
     } catch (e) {
       emit(ChatError(e.toString()));
     }

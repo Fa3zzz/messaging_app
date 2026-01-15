@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 
 @immutable
 class ChatMessage {
@@ -18,13 +17,8 @@ class ChatMessage {
     required this.createdAt,
   });
 
-  factory ChatMessage.fromFirebase(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory ChatMessage.fromFirebase(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data();
-
-    if (data == null) {
-      throw StateError('Missing data for chat message ${doc.id}');
-    }
-
     final ts = data['createdAt'];
     final createdAt = ts is Timestamp ? ts.toDate() : DateTime.now();
 
