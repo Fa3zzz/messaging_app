@@ -28,7 +28,7 @@ class FeedCard {
 
     return FeedCard(
       cardId: doc.id, 
-      authorId: data["authorId"] as String, 
+      authorId: (data["authorId"] ?? '') as String, 
       title: (data["title"] ?? '') as String, 
       content: (data["content"] ?? '') as String, 
       createdAt: createdAt, 

@@ -36,6 +36,7 @@ class FirestoreFeedProvider implements FeedProvider {
         .collection('cards')
         .where('authorId', isNotEqualTo: uid)
         .where('expiresAt', isGreaterThan: Timestamp.now())
+        .orderBy('authorId')
         .orderBy('expiresAt', descending: false)
         .orderBy('createdAt', descending: false)
         .snapshots()
