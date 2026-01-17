@@ -16,6 +16,11 @@ class FirestoreFeedProvider implements FeedProvider {
       throw StateError('User not logged in');
     }
 
+    final now = Timestamp.now();
+    final expiresAt = Timestamp.fromMillisecondsSinceEpoch(
+      now.millisecondsSinceEpoch + const Duration(hours: 24).inMilliseconds
+    );
+
     final ref = await _firestore
         .collection('cards')
         .add({
@@ -23,7 +28,7 @@ class FirestoreFeedProvider implements FeedProvider {
           'title': title,
           'content': content ?? '',
           'createdAt': FieldValue.serverTimestamp(),
-          'expiresAt': Timestamp.fromDate(DateTime.now().add(const Duration(hours: 24))),
+          'expiresAt': expiresAt,
         });
 
     return ref.id;
@@ -32,18 +37,17 @@ class FirestoreFeedProvider implements FeedProvider {
   @override
   Stream<List<FeedCard>> feedStream() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
+
     return _firestore
         .collection('cards')
-        .where('authorId', isNotEqualTo: uid)
         .where('expiresAt', isGreaterThan: Timestamp.now())
-        .orderBy('authorId')
-        .orderBy('expiresAt', descending: false)
-        .orderBy('createdAt', descending: false)
+        .orderBy('expiresAt')
         .snapshots()
         .map((snapshot) {
           return snapshot.docs
-          .map((doc) => FeedCard.fromFirebase(doc))
-          .toList();
+              .map((doc) => FeedCard.fromFirebase(doc))
+              .where((card) => card.authorId != uid) // filter here instead
+              .toList();
         });
   }
 }

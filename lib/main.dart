@@ -4,8 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:messaging_app/bloc/auth_bloc.dart';
 import 'package:messaging_app/bloc/auth_event.dart';
 import 'package:messaging_app/bloc/auth_state.dart';
+import 'package:messaging_app/bloc/cards/card_bloc.dart';
 import 'package:messaging_app/helpers/loading_screen.dart';
 import 'package:messaging_app/services/auth/firebase_auth_provider.dart';
+import 'package:messaging_app/services/chat/chat_provider.dart';
 import 'package:messaging_app/services/chat/chat_service.dart';
 import 'package:messaging_app/services/feed/feed_service.dart';
 import 'package:messaging_app/views/forgot_password_view.dart';
@@ -22,7 +24,7 @@ void main() async {
   runApp(
     MultiRepositoryProvider(
       providers: [
-        RepositoryProvider<ChatService>(create: (_) => ChatService.firestore()),
+        RepositoryProvider<ChatProvider>(create: (_) => ChatService.firestore()),
         RepositoryProvider<FeedService>(create: (_) => FeedService.firestore()),
       ],
       child: MaterialApp(
@@ -85,7 +87,16 @@ class _HomePageState extends State<HomePage> {
       },
       builder: (context, state) {
         if (state is AuthStateLoggedIn) {
-          return const HomeShellView();
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider<CardBloc>(
+                create: (context) => CardBloc(
+                  feedProvider: context.read<FeedService>(),
+                ),
+              ),
+            ], 
+            child: const HomeShellView(),
+          );
         } else if (state is AuthStateNeedsVerification) {
           return const VerifyEmailView();
         } else if (state is AuthStateLoggedOut) {

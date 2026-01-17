@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:messaging_app/services/chat/chat_service.dart';
+import 'package:messaging_app/bloc/cards/card_bloc.dart';
+import 'package:messaging_app/bloc/cards/card_event.dart';
+import 'package:messaging_app/bloc/chat/chat_bloc.dart';
+import 'package:messaging_app/bloc/chat/chat_event.dart';
+import 'package:messaging_app/services/chat/chat_provider.dart';
 import 'package:messaging_app/services/feed/feed_card.dart';
 import 'package:messaging_app/services/feed/feed_service.dart';
 import 'package:messaging_app/views/chat_room_view.dart';
+import 'package:messaging_app/views/create_cards_sheet.dart';
 
 class CardsFeedView extends StatelessWidget {
   const CardsFeedView({super.key});
@@ -16,6 +21,24 @@ class CardsFeedView extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.secondary,
       appBar: AppBar(
         title: const Text('Feed'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              final bloc = context.read<CardBloc>();
+              bloc.add(const CreateCardClear());
+
+              showModalBottomSheet(
+                context: context, 
+                isScrollControlled: true,
+                builder: (_) => BlocProvider.value(
+                  value: bloc,
+                  child: const CreateCardsSheet(),
+                ),
+              );
+            }, 
+            icon: const Icon(Icons.add),
+          )
+        ],
       ),
       body: StreamBuilder<List<FeedCard>>(
         stream: feedService.feedStream(), 
@@ -61,13 +84,17 @@ class CardsFeedView extends StatelessWidget {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () async {
-                            final chatId = await context.read<ChatService>()
+                            final chatProvider = context.read<ChatProvider>();
+                            final chatId = await chatProvider
                                                         .getOrCreateChatId(otherUid: card.authorId);
                             if (!context.mounted) return;
 
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => ChatRoomView(chatId: chatId, title: chatId),
+                                builder: (_) => BlocProvider(
+                                  create: (_) => ChatBloc(chatProvider)..add(ChatStarted(chatId)),
+                                  child: ChatRoomView(chatId: chatId, title: chatId),
+                                ),
                               )
                             );
                           }, 
