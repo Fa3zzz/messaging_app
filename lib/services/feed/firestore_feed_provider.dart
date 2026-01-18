@@ -46,8 +46,43 @@ class FirestoreFeedProvider implements FeedProvider {
         .map((snapshot) {
           return snapshot.docs
               .map((doc) => FeedCard.fromFirebase(doc))
-              .where((card) => card.authorId != uid) // filter here instead
+              .where((card) => card.authorId != uid)
               .toList();
         });
+  }
+  
+  @override
+  Future<void> deleteCard({required String cardId}) {
+    return _firestore
+            .collection('cards')
+            .doc(cardId)
+            .delete();
+  }
+  
+@override
+Stream<List<FeedCard>> myFeedStream() {
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+  if (uid == null) throw StateError('User not logged in');
+
+  return _firestore
+      .collection('cards')
+      .where('authorId', isEqualTo: uid)
+      .where('expiresAt', isGreaterThan: Timestamp.now())
+      .orderBy('expiresAt')
+      .snapshots()
+      .map((snapshot) => snapshot.docs
+          .map((doc) => FeedCard.fromFirebase(doc))
+          .toList());
+
+  // return _firestore
+  //   .collection('cards')
+  //   .where('authorId', isEqualTo: uid)
+  //   .orderBy('expiresAt')
+  //   .snapshots()
+  //   .map((s) => s.docs
+  //       .map(FeedCard.fromFirebase)
+  //       .where((c) => c.expiresAt.isAfter(DateTime.now()))
+  //       .toList());
+
   }
 }

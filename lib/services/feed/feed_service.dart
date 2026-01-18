@@ -22,5 +22,15 @@ class FeedService implements FeedProvider {
   Stream<List<FeedCard>> feedStream() {
     return provider.feedStream();
   }
+  
+  @override
+  Future<void> deleteCard({required String cardId}) {
+    return provider.deleteCard(cardId: cardId);
+  }
+  
+  @override
+  Stream<List<FeedCard>> myFeedStream() {
+    return provider.myFeedStream();
+  }
 
 }

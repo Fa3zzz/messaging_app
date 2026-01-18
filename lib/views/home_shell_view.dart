@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:messaging_app/views/cards_feed_view.dart';
 import 'package:messaging_app/views/chats_view.dart';
+import 'package:messaging_app/views/my_cards_view.dart';
 
 class HomeShellView extends StatefulWidget {
   const HomeShellView({super.key});
@@ -14,7 +15,8 @@ class _HomeShellViewState extends State<HomeShellView> {
   int _index = 0;
   final _pages = const [
     ChatsView(),
-    CardsFeedView()
+    CardsFeedView(),
+    MyCardsView(),
   ];
 
   @override
@@ -36,7 +38,11 @@ class _HomeShellViewState extends State<HomeShellView> {
           BottomNavigationBarItem(
             icon: Icon(Icons.format_quote_outlined),
             label: 'Cards',
-          )
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_4_outlined),
+            label: 'My Cards'
+          ),
         ],
       ),
     );
